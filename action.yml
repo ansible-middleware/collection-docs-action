@@ -182,6 +182,8 @@ runs:
     - name: Commit changelogs
       shell: bash
       working-directory: ${{ inputs.path }}
+      env:
+        GH_TOKEN: ${{ inputs.token }}
       run: |
         if [[ "${{ inputs.commit_changelog }}" == "true" ]]; then
           git config user.name "${{ inputs.bot_account }}"
@@ -198,10 +200,11 @@ runs:
           git add CHANGELOG.rst changelogs/changelog.yaml gh-release.md
           git commit -s -m "Update changelog for release ${{ steps.changelog_version.outputs.TAG_VERSION }}" || true
           git push origin "${BRANCH}"
-          hub pull-request --no-edit \
+          gh pr create \
             --base main \
             --head "${BRANCH}" \
-            --message "Update changelog for release ${{ steps.changelog_version.outputs.TAG_VERSION }}"
+            --title "Update changelog for release ${{ steps.changelog_version.outputs.TAG_VERSION }}" \
+            --body "Update changelog for release ${{ steps.changelog_version.outputs.TAG_VERSION }}"
         else
           echo "Skipping commit changelogs"
         fi
